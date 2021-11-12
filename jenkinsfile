@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone') {
+            steps {
+                git credentialsId: '1cbc9a83-3a6e-44ac-ac4f-bc53db17d055', url: 'https://codecloud.web.att.com/scm/st_dtvawscp/31725_dtp_testmicroservice.git'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                withGradle {
+                    sh 'gradlew.bat build --scan'
+                }
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                bat 'gradlew.bat test'
+            }
+            post {
+                always {
+                    //junit '**/build/test-results/test/TEST-*.xml'
+                    //catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "hello"
+                    //sh "exit 1"
+                    //}
+                }
+            }
+        }
+        
+        stage('DockerBuild') {
+            steps {
+                bat  'docker build -t registry.gitlab.com/dtvpfdops/testmicroservice .'
+            }
+        }
+        
+        stage('Push To GitLab') {
+            steps {
+                withCredentials([string(credentialsId: 'patToken', variable: 'patForUse')]) {
+                       bat "docker login -u Vishesh_Sharma@infosys.com -p ${patForUse} registry.gitlab.com"
+                }
+                bat 'docker push registry.gitlab.com/dtvpfdops/testmicroservice'
+            }
+        }
+        
+        stage('Push ECR- Manual?') {
+            steps {
+                timeout(time: 1, unit:'DAYS') {
+                    input 'Push to ECR?'
+                    
+                }
+            }
+        }
+    }
+}
