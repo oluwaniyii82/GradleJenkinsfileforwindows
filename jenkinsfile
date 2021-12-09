@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git credentialsId: '1cbc9a83-3a6e-44ac-ac4f-bc53db17d055', url: 'https://codecloud.web.att.com/scm/st_dtvawscp/31725_dtp_testmicroservice.git'
+                git credentialsId: '1cb', url: 'https://.git'
             }
         }
         
@@ -32,16 +32,16 @@ pipeline {
         
         stage('DockerBuild') {
             steps {
-                bat  'docker build -t registry.gitlab.com/dtvpfdops/testmicroservice .'
+                bat  'docker build -t registry.gitlab.com/s/testmicroservice .'
             }
         }
         
         stage('Push To GitLab') {
             steps {
                 withCredentials([string(credentialsId: 'patToken', variable: 'patForUse')]) {
-                       bat "docker login -u Vishesh_Sharma@infosys.com -p ${patForUse} registry.gitlab.com"
+                       bat "docker login -u tghdfds.com -p ${patForUse} registry.gitlab.com"
                 }
-                bat 'docker push registry.gitlab.com/dtvpfdops/testmicroservice'
+                bat 'docker push registry.gitlab.com//testmicroservice'
             }
         }
         
